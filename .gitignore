@@ -7,6 +7,9 @@ notMNIST_small/*
 # Ignore pickle files
 *.pickle
 
+# Ignore referenced reading material
+read/*
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

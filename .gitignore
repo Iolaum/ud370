@@ -9,6 +9,8 @@ notMNIST_small/*
 
 # Ignore referenced reading material
 read/*
+# Unignore readme
+!read/README.md
 
 
 # Byte-compiled / optimized / DLL files

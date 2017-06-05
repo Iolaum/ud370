@@ -12,6 +12,9 @@ read/*
 # Unignore readme
 !read/README.md
 
+# Ignore data files in Data directory
+data/*
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

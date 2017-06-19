@@ -3176,4 +3176,3 @@ tensorflow/contrib/image/kernels/image_ops_gpu.cu.cc(36): here
 Target //tensorflow/tools/pip_package:build_pip_package up-to-date:
   bazel-bin/tensorflow/tools/pip_package/build_pip_package
 INFO: Elapsed time: 1697.825s, Critical Path: 147.87s
-

@@ -2,7 +2,7 @@
 
 This Repository contains code created while studying Deep Learning and learning to use Tensorflow.
 
-- The assignments folder contains work done on the [Udacity Deep Learning course](https://classroom.udacity.com/courses/ud730).
+- The assignments folder contains work done on the [Udacity Deep Learning course](https://classroom.udacity.com/courses/ud730). Original code on them also comes from the [Tensorflow repository](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/examples/udacity).
 - The extras folder contains extra projects aimed at learning more about Deep Learning and TensorFlow.
 
 

@@ -13,3 +13,7 @@
 	Additional material:
 	- [word2vec Parameter Learning Explained](https://arxiv.org/abs/1411.2738): From the paper's abstract:<br>
 	This  note  provides  detailed  derivations  and  explanations  of  the  parameter  update equations of the word2vec models, including the original continuous bag-of-word (CBOW)  and  skip-gram  (SG)  models,  as  well  as  advanced  optimization  techniques, including hierarchical softmax and negative sampling.
+	- [Evaluation methods for unsupervised word embeddings](http://www.aclweb.org/anthology/D15-1036): Paper discussing methods to evaluate embeddings.
+	- Good [summary article](https://iksinc.wordpress.com/tag/continuous-bag-of-words-cbow/) about word2vec and cbow models.
+
+

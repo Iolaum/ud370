@@ -1,14 +1,14 @@
 # Compiling TensorFlow from source.
 
-This side project has the goal of compiling TensorFlow from source to make the best use of my laptop's computing resources. The insstructions below describe my experience in installing tensorflow on my laptop which has an Intel i5-7300hq CPU, and Nvidia 1050Ti GPU and Ubuntu 16.04.2 OS.
+This side project has the goal of compiling TensorFlow from source to make the best use of my laptop's computing resources. The insstructions below describe my experience in installing tensorflow on my laptop which has an Intel i5-7300hq CPU, and Nvidia 1050Ti GPU and Ubuntu 16.04.3 OS.
 
 
 
-### [TensorFlow Installation Instructions](https://www.tensorflow.org/install/install_sources)
+## [TensorFlow Installation Instructions](https://www.tensorflow.org/install/install_sources)
 
 *Note: Link used at 16.06.2017. Information provided may be different at a later date.*
 
-#### Perform preparing environment for Linux instructions. (Python and Java dependencies)
+### Perform preparing environment for Linux instructions. (Python and Java dependencies)
 ```{shell}
 $ python3 -V
 Python 3.5.2
@@ -18,7 +18,7 @@ OpenJDK Runtime Environment (build 1.8.0_131-8u131-b11-0ubuntu1.16.04.2-b11)
 OpenJDK 64-Bit Server VM (build 25.131-b11, mixed mode)
 ```
 
-#### Install bazel
+### Install bazel
 [Basel Website Installation Instructions](https://bazel.build/versions/master/docs/install.html) [Accessed at 4.07.2017]. We decide to use the _Bazel custom APT repository_ (which is the recommended method).
 
 ```{shell}
@@ -27,50 +27,104 @@ $ echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" 
 $ curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
 $ sudo apt-get update
 $ sudo apt-get install bazel
-# Note: This time we got bazel 0.5.2 and java's ibm was not installed !
+# Note: This time java's ibm was not installed !
 $ java -version
 openjdk version "1.8.0_131"
 OpenJDK Runtime Environment (build 1.8.0_131-8u131-b11-0ubuntu1.16.04.2-b11)
 OpenJDK 64-Bit Server VM (build 25.131-b11, mixed mode)
 
 ```
-This is not intended - but will let it be for now.
 
-#### Install python3.5 tf build  dependencies
+### Install python3.5 tf build  dependencies
 ```{shell}
 $ sudo apt-get install python3-numpy python3-dev python3-pip python3-wheel
 ```
 Those packages were already installed on my system, so I canceled the command on the confirmation prompt.
 Care has to be taken because apt will not see relevant packages when installed through pip!!
 
-#### Optional: install TensorFlow for GPU prerequisites.
-They have already been installed to get tf isntallation working.
+### Install CUDA 8
 
-However when double checking we cannot find the LD\_LIBRARY\_PATH enviromental variable. Hence we go through the [nvidia instructions](http://docs.nvidia.com/cuda/cuda-installation-guide-linux/#post-installation-actions)
- again ommiting steps that have been undertaken during installation of previous tensorflow versions.
+We go through the [nvidia instructions](http://docs.nvidia.com/cuda/cuda-installation-guide-linux/) to install CUDA 8.
 
-We decide to add the needed enviromental variables in a non-persistent way.
-```{shell}
-$ export PATH=/usr/local/cuda-8.0/bin${PATH:+:${PATH}}
-$ export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+**Note on post installation instructions:**<br>
+We need to set two permanent environmental variables. According to [ubuntu's documentation](https://help.ubuntu.com/community/EnvironmentVariables#Persistent_environment_variables)
+we do the following to add the relevant commands at the ```.profile``` file.
+
+```
+$ echo -e "\n\n# Persistent Environmental variables needed for CUDA" >> .profile
+$ echo -e "export PATH=/usr/local/cuda-8.0/bin${PATH:+:${PATH}}" >> .profile
+$ echo -e "export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> .profile
 ```
 
-Invidia also has some [instructions](https://developer.nvidia.com/cudnn) for CuDNN but nothing relevant was found on this page. The site has instructions for CuDNN 7 but we have 5.1 - which
-is the one used by TF. I remember installing CuDNN 5.1 after registering on the nvidia developer program.
+To verify our installation we can run the following command:
+```
+$ nvcc --version
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2016 NVIDIA Corporation
+Built on Tue_Jan_10_13:22:03_CST_2017
+Cuda compilation tools, release 8.0, V8.0.61
+```
 
 
-#### Install libcupti-dev -- already installed.
+### Install CUDNN 6
+
+You can download CUDNN 6 from [nvidia's website](https://developer.nvidia.com/cudnn) (requires log in).
+
+Then we go to where we downloaded the file and:
+
+```
+# Go to Downloads directory
+$ cd ~/Downloads
+# unzip file
+$ tar -zxvf cudnn-8.0-linux-x64-v6.0.tgz 
+cuda/include/cudnn.h
+cuda/lib64/libcudnn.so
+cuda/lib64/libcudnn.so.6
+cuda/lib64/libcudnn.so.6.0.21
+cuda/lib64/libcudnn_static.a
+```
+We need to replace the files from the previous version with those files. Hence we go to delete the previous ones first.
+
+```
+$ cd /usr/local/cuda-8.0/
+$ ls -la include/*cudnn*
+-r--r--r-- 1 root root 99658 Mar  2 23:34 include/cudnn.h
+$ ls -la lib64/*cudnn*
+lrwxrwxrwx 1 root root       13 Mar  2 23:35 lib64/libcudnn.so -> libcudnn.so.5
+lrwxrwxrwx 1 root root       18 Mar  2 23:35 lib64/libcudnn.so.5 -> libcudnn.so.5.1.10
+-rwxr-xr-x 1 root root 84163560 Mar  2 23:35 lib64/libcudnn.so.5.1.10
+-rw-r--r-- 1 root root 70364814 Mar  2 23:35 lib64/libcudnn_static.a
+```
+Those are the files we want to delete and replace with the new ones, therefore:
+```
+# sudo is needed because those files are outside the user's home directory
+$ sudo rm include/*cudnn*
+$ sudo rm lib64/*cudnn*
+```
+
+No we proceed to copy the new CUDNN 6 files:
+
+```
+# sudo is needed because we are copying files outside of the user's home directory
+# -P is needed to preserve symbolic links
+$ sudo cp -P ~/Downloads/cuda/include/cudnn.h /usr/local/cuda-8.0/include/
+$ sudo cp -P ~/Downloads/cuda/lib64/*cudnn* /usr/local/cuda-8.0/lib64/
+```
+
+### Install libcupti-dev 
+
+In case it's not already installed:
 
 ```{shell}
 $ sudo apt-get install libcupti-dev
 ```
 
-#### Go at the TensorFlow source code repository
+### Go at the TensorFlow source code repository
 I have cloned the tensorflow repository. 
 ```{shell}
-$ cd ~/tensorflow
-# go to r1.2 branch
-$ git checkout r1.2
+$ cd ~/Repositories/tensorflow/
+# go to r1.3 branch
+$ git checkout r1.3
 ```
 In the case of a previously compiled library we need to run
 ```{shell}
@@ -78,15 +132,17 @@ $ bazel clean
 ```
 to clean bazel temporary configuration files. (We also need to update the repository if needed.)
 
-#### Configuring the compilation:
-After checking out on the 1.2 release branch we start the configuration script and enter the choices described below:
+### Configuring the compilation:
+After checking out on the 1.3 release branch we start the configuration script and enter the choices described below:
 ```{shell}
-$ ./configure
+$ ./configure 
+........
+You have bazel 0.5.3 installed.
 Please specify the location of python. [Default is /usr/bin/python]: /usr/bin/python3
 Found possible Python library paths:
-  /usr/local/lib/python3.5/dist-packages
   /usr/lib/python3/dist-packages
-Please input the desired Python library path to use.  Default is [/usr/local/lib/python3.5/dist-packages]
+  /usr/local/lib/python3.5/dist-packages
+Please input the desired Python library path to use.  Default is [/usr/lib/python3/dist-packages]
 /usr/local/lib/python3.5/dist-packages
 Do you wish to build TensorFlow with MKL support? [y/N] y
 MKL support will be enabled for TensorFlow
@@ -108,145 +164,117 @@ Do you wish to build TensorFlow with CUDA support? [y/N] y
 CUDA support will be enabled for TensorFlow
 Do you want to use clang as CUDA compiler? [y/N] n
 nvcc will be used as CUDA compiler
-Please specify the CUDA SDK version you want to use, e.g. 7.0. [Leave empty to use system default]: 8.0
+Please specify the CUDA SDK version you want to use, e.g. 7.0. [Leave empty to default to CUDA 8.0]: 
 Please specify the location where CUDA 8.0 toolkit is installed. Refer to README.md for more details. [Default is /usr/local/cuda]: 
 Please specify which gcc should be used by nvcc as the host compiler. [Default is /usr/bin/gcc]: 
-Please specify the cuDNN version you want to use. [Leave empty to use system default]: 5
-Please specify the location where cuDNN 5 library is installed. Refer to README.md for more details. [Default is /usr/local/cuda]: 
+Please specify the cuDNN version you want to use. [Leave empty to default to cuDNN 6.0]: 
+Please specify the location where cuDNN 6 library is installed. Refer to README.md for more details. [Default is /usr/local/cuda]: 
 Please specify a list of comma-separated Cuda compute capabilities you want to build with.
 You can find the compute capability of your device at: https://developer.nvidia.com/cuda-gpus.
 Please note that each additional compute capability significantly increases your build time and binary size.
-[Default is: "3.5,5.2"]: 6.1
-........
-INFO: Starting clean (this may take a while). Consider using --async if the clean takes more than several minutes.
+[Default is: "6.1"]: 
+Do you wish to build TensorFlow with MPI support? [y/N] n
+MPI support will not be enabled for TensorFlow
 Configuration finished
 ```
 
-#### Configuration options
+### Configuration options
 I didn't know what some of the configuration options where:
 - [Intel Math Kernel Library (MKL)](https://en.wikipedia.org/wiki/Math_Kernel_Library). Enabled it even though I don't think it 'll contribute much because of the dedicated GPU.
 - [VERBS](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/verbs): This appears to be a [Remote direct memory access](https://en.wikipedia.org/wiki/Remote_direct_memory_access) feature. Since I only plan to use tf on my laptop this was disabled.
+- According to [wikipedia MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface) is used in parallel computing set ups and I don't think this has a use case for my laptop hence I didn't enable it.
 
-#### Build the pip package with GPU support:
-Moving forward I build tensorflow:
+### Build the pip package with GPU support:
+Moving forward we build tensorflow:
 ```{shell}
 $ bazel build --config=opt --config=cuda //tensorflow/tools/pip_package:build_pip_package  > logCompile.txt 2>&1
 ```
 The build process gives a huge number of wanring messages captured in [this file](./logCompile.txt).
 
-Subsequently I build the pip/wheel binary
+Subsequently we build the pip/wheel binary:
+
 ```{shell}
-$ bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
-Wed 5 Jul 01:12:37 BST 2017 : === Using tmpdir: /tmp/tmp.w84zBdgDKh
-~/tensorflow/bazel-bin/tensorflow/tools/pip_package/build_pip_package.runfiles ~/tensorflow
-~/tensorflow
-/tmp/tmp.w84zBdgDKh ~/tensorflow
-Wed 5 Jul 01:12:38 BST 2017 : === Building wheel
+$ bazel-bin/tensorflow/tools/pip_package/build_pip_package $PWD/
+Fri 18 Aug 01:00:49 BST 2017 : === Using tmpdir: /tmp/tmp.IAC6HDmWnz
+~/Repositories/tensorflow/bazel-bin/tensorflow/tools/pip_package/build_pip_package.runfiles ~/Repositories/tensorflow
+~/Repositories/tensorflow
+/tmp/tmp.IAC6HDmWnz ~/Repositories/tensorflow
+Fri 18 Aug 01:00:50 BST 2017 : === Building wheel
 warning: no files found matching '*.dll' under directory '*'
 warning: no files found matching '*.lib' under directory '*'
-~/tensorflow
-Wed 5 Jul 01:12:48 BST 2017 : === Output wheel file is in: /tmp/tensorflow_pkg
-# get new pkg out of tmp
-$ mv /tmp/tensorflow_pkg/tensorflow-1.2.1-cp35-cp35m-linux_x86_64.whl ./
+warning: no files found matching '*.h' under directory 'tensorflow/include/tensorflow'
+warning: no files found matching '*' under directory 'tensorflow/include/Eigen'
+warning: no files found matching '*' under directory 'tensorflow/include/external'
+warning: no files found matching '*.h' under directory 'tensorflow/include/google'
+warning: no files found matching '*' under directory 'tensorflow/include/third_party'
+warning: no files found matching '*' under directory 'tensorflow/include/unsupported'
+~/Repositories/tensorflow
+Fri 18 Aug 01:01:01 BST 2017 : === Output wheel file is in: /home/$USER/Repositories/tensorflow/
 ```
-- Comprehension Question: Why did I need to do two steps? What does the first step do if not create the binary of the compiled program? (And if so where is the output file placed?)
+- Comprehension Question: Why did we need to do it in two steps? What does the first step do if not create the binary of the compiled program? (And if so where are the output files placed?)
 
 Finally let's install our new package!
 ```{shell}
-$ sudo -H pip3 install tensorflow-1.2.1-cp35-cp35m-linux_x86_64.whl 
-[sudo] password for nikolaos: 
-Processing ./tensorflow-1.2.1-cp35-cp35m-linux_x86_64.whl
-Requirement already satisfied: six>=1.10.0 in /usr/lib/python3/dist-packages (from tensorflow==1.2.1)
-Requirement already satisfied: bleach==1.5.0 in /usr/local/lib/python3.5/dist-packages (from tensorflow==1.2.1)
-Requirement already satisfied: html5lib==0.9999999 in /usr/local/lib/python3.5/dist-packages (from tensorflow==1.2.1)
-Requirement already satisfied: numpy>=1.11.0 in /usr/local/lib/python3.5/dist-packages (from tensorflow==1.2.1)
-Requirement already satisfied: wheel>=0.26 in /usr/lib/python3/dist-packages (from tensorflow==1.2.1)
-Requirement already satisfied: backports.weakref==1.0rc1 in /usr/local/lib/python3.5/dist-packages (from tensorflow==1.2.1)
-Requirement already satisfied: werkzeug>=0.11.10 in /usr/local/lib/python3.5/dist-packages (from tensorflow==1.2.1)
-Requirement already satisfied: protobuf>=3.2.0 in /usr/local/lib/python3.5/dist-packages (from tensorflow==1.2.1)
-Collecting markdown>=2.6.8 (from tensorflow==1.2.1)
-Requirement already satisfied: setuptools in /usr/local/lib/python3.5/dist-packages (from protobuf>=3.2.0->tensorflow==1.2.1)
-Requirement already satisfied: appdirs>=1.4.0 in /usr/local/lib/python3.5/dist-packages (from setuptools->protobuf>=3.2.0->tensorflow==1.2.1)
-Requirement already satisfied: packaging>=16.8 in /usr/local/lib/python3.5/dist-packages (from setuptools->protobuf>=3.2.0->tensorflow==1.2.1)
-Requirement already satisfied: pyparsing in /usr/local/lib/python3.5/dist-packages (from packaging>=16.8->setuptools->protobuf>=3.2.0->tensorflow==1.2.1)
-Installing collected packages: markdown, tensorflow
-  Found existing installation: Markdown 2.2.0
-    Uninstalling Markdown-2.2.0:
-      Successfully uninstalled Markdown-2.2.0
-  Found existing installation: tensorflow 1.2.0
-    Uninstalling tensorflow-1.2.0:
-      Successfully uninstalled tensorflow-1.2.0
-Successfully installed markdown-2.6.8 tensorflow-1.2.1
+$ sudo -H pip3 install tensorflow-1.3.0-cp35-cp35m-linux_x86_64.whl
+Processing ./tensorflow-1.3.0-cp35-cp35m-linux_x86_64.whl
+Requirement already satisfied: numpy>=1.11.0 in /usr/local/lib/python3.5/dist-packages (from tensorflow==1.3.0)
+Requirement already satisfied: protobuf>=3.3.0 in /usr/local/lib/python3.5/dist-packages (from tensorflow==1.3.0)
+Requirement already satisfied: wheel>=0.26 in /usr/lib/python3/dist-packages (from tensorflow==1.3.0)
+Collecting tensorflow-tensorboard<0.2.0,>=0.1.0 (from tensorflow==1.3.0)
+  Downloading tensorflow_tensorboard-0.1.4-py3-none-any.whl (2.2MB)
+    100% |████████████████████████████████| 2.2MB 502kB/s 
+Requirement already satisfied: six>=1.10.0 in /usr/lib/python3/dist-packages (from tensorflow==1.3.0)
+Requirement already satisfied: setuptools in /usr/local/lib/python3.5/dist-packages (from protobuf>=3.3.0->tensorflow==1.3.0)
+Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.5/dist-packages (from tensorflow-tensorboard<0.2.0,>=0.1.0->tensorflow==1.3.0)
+Collecting bleach==1.5.0 (from tensorflow-tensorboard<0.2.0,>=0.1.0->tensorflow==1.3.0)
+  Using cached bleach-1.5.0-py2.py3-none-any.whl
+Collecting html5lib==0.9999999 (from tensorflow-tensorboard<0.2.0,>=0.1.0->tensorflow==1.3.0)
+Requirement already satisfied: werkzeug>=0.11.10 in /usr/local/lib/python3.5/dist-packages (from tensorflow-tensorboard<0.2.0,>=0.1.0->tensorflow==1.3.0)
+Installing collected packages: html5lib, bleach, tensorflow-tensorboard, tensorflow
+  Found existing installation: html5lib 0.999999999
+    Uninstalling html5lib-0.999999999:
+      Successfully uninstalled html5lib-0.999999999
+  Found existing installation: bleach 2.0.0
+    Uninstalling bleach-2.0.0:
+      Successfully uninstalled bleach-2.0.0
+  Found existing installation: tensorflow 1.2.1
+    Uninstalling tensorflow-1.2.1:
+      Successfully uninstalled tensorflow-1.2.1
+Successfully installed bleach-1.5.0 html5lib-0.9999999 tensorflow-1.3.0 tensorflow-tensorboard-0.1.4
 ```
 
-#### Testing the new installation
+### Testing the new installation
 We test the new installation on the terminal:
 ```{shell}
+cd ~
 $ python3
 Python 3.5.2 (default, Nov 17 2016, 17:05:23) 
 [GCC 5.4.0 20160609] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 >>> import tensorflow as tf
 >>> print(tf.__version__)
-1.2.1
+1.3.0
 >>> hello = tf.constant('Hello, TensorFlow!')
 >>> sess = tf.Session()
-2017-07-05 01:17:42.668299: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:893] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2017-07-05 01:17:42.668596: I tensorflow/core/common_runtime/gpu/gpu_device.cc:940] Found device 0 with properties: 
+2017-08-18 01:06:56.626368: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:893] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2017-08-18 01:06:56.626962: I tensorflow/core/common_runtime/gpu/gpu_device.cc:955] Found device 0 with properties: 
 name: GeForce GTX 1050 Ti
 major: 6 minor: 1 memoryClockRate (GHz) 1.62
 pciBusID 0000:01:00.0
 Total memory: 3.94GiB
-Free memory: 3.60GiB
-2017-07-05 01:17:42.668607: I tensorflow/core/common_runtime/gpu/gpu_device.cc:961] DMA: 0 
-2017-07-05 01:17:42.668629: I tensorflow/core/common_runtime/gpu/gpu_device.cc:971] 0:   Y 
-2017-07-05 01:17:42.668655: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1030] Creating TensorFlow device (/gpu:0) -> (device: 0, name: GeForce GTX 1050 Ti, pci bus id: 0000:01:00.0)
+Free memory: 3.63GiB
+2017-08-18 01:06:56.627358: I tensorflow/core/common_runtime/gpu/gpu_device.cc:976] DMA: 0 
+2017-08-18 01:06:56.627440: I tensorflow/core/common_runtime/gpu/gpu_device.cc:986] 0:   Y 
+2017-08-18 01:06:56.627502: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1045] Creating TensorFlow device (/gpu:0) -> (device: 0, name: GeForce GTX 1050 Ti, pci bus id: 0000:01:00.0)
 >>> print(sess.run(hello))
 b'Hello, TensorFlow!'
 >>> exit()
 
 ```
 
-### Miscalleneous Notes.
+## Miscalleneous Notes.
 
-When testing installed pip packages (for tf v1.2.0) we find a strange thing:
-```{shell}
-$ pip3 show tensorflow
-Name: tensorflow
-Version: 1.2.0
-Summary: TensorFlow helps the tensors flow
-Home-page: http://tensorflow.org/
-Author: Google Inc.
-Author-email: opensource@google.com
-License: Apache 2.0
-Location: /usr/local/lib/python3.5/dist-packages
-Requires: html5lib, werkzeug, wheel, six, protobuf, numpy, bleach, backports.weakref, markdown
-$ pip3 show tensorflow-gpu
-Name: tensorflow-gpu
-Version: 1.1.0
-Summary: TensorFlow helps the tensors flow
-Home-page: http://tensorflow.org/
-Author: Google Inc.
-Author-email: opensource@google.com
-License: Apache 2.0
-Location: /usr/local/lib/python3.5/dist-packages
-Requires: numpy, six, werkzeug, wheel, protobuf
-```
-The old package hasn't been removed!
-This probably has to do with the different names of the packages (tensorflow vs tensorflow-gpu).
-We try uninstalling ourselves:
-```{shell}
-$ sudo -H pip3 uninstall tensorflow-gpu
-[sudo] password for $USER: 
-Uninstalling tensorflow-gpu-1.1.0:
-...
-Proceed (y/n)? y
-  Successfully uninstalled tensorflow-gpu-1.1.0
-```
+- When compiling from source the tensorflow package is called ```tensorflow``` (for pip) but when installing the precompiled binary it can be called either ```tensorflow``` or ```tensorflow-gpu```. Hence if you are replacing the gpu version with a compiled one be sure to manually uninstall it first to avoid ending up with both installed in your system.
 
-This appeared to break tensorflow, but it may have been that I was trying to run it from the tensorflow source repository.
-I have subsequently uninstalled it and re-installed it from source. Therefore it is suggested to uninstall the previous version of
-tensorflow before installing the new one.
-
-According to [this stack overflow answer](https://stackoverflow.com/a/35963479/1904901)
-starting python and then tensorflow within the tensorflow source code repository may cause problems !
+ - According to [this stack overflow answer](https://stackoverflow.com/a/35963479/1904901)
+starting python and then importing tensorflow within the tensorflow source code repository may cause problems !

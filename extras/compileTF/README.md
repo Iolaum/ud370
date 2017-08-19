@@ -19,7 +19,7 @@ OpenJDK 64-Bit Server VM (build 25.131-b11, mixed mode)
 ```
 
 ### Install bazel
-[Basel Website Installation Instructions](https://bazel.build/versions/master/docs/install.html) [Accessed at 4.07.2017]. We decide to use the _Bazel custom APT repository_ (which is the recommended method).
+[Basel Website Installation Instructions](https://bazel.build/versions/master/docs/install.html) [Accessed at 4.07.2017]. We decide to use the bazel custom apt repository (which is the recommended method).
 
 ```{shell}
 # Add Bazel distribution URI as a package source (one time setup)
@@ -36,11 +36,12 @@ OpenJDK 64-Bit Server VM (build 25.131-b11, mixed mode)
 ```
 
 ### Install python3.5 tf build  dependencies
+
+Below are the recommended python packages. Take care because some (e.g. numpy) may be installed through pip and not apt, in which case apt will not see them. If they are not installed in your system run:
+
 ```{shell}
 $ sudo apt-get install python3-numpy python3-dev python3-pip python3-wheel
 ```
-Those packages were already installed on my system, so I canceled the command on the confirmation prompt.
-Care has to be taken because apt will not see relevant packages when installed through pip!!
 
 ### Install CUDA 8
 
@@ -48,7 +49,7 @@ We go through the [nvidia instructions](http://docs.nvidia.com/cuda/cuda-install
 
 **Note on post installation instructions:**<br>
 We need to set two permanent environmental variables. According to [ubuntu's documentation](https://help.ubuntu.com/community/EnvironmentVariables#Persistent_environment_variables)
-we do the following to add the relevant commands at the ```.profile``` file.
+we chose the following way to add the relevant commands at the ```.profile``` file.
 
 ```
 $ echo -e "\n\n# Persistent Environmental variables needed for CUDA" >> .profile
@@ -57,6 +58,7 @@ $ echo -e "export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64${LD_LIBRARY_PATH:+:$
 ```
 
 To verify our installation we can run the following command:
+
 ```
 $ nvcc --version
 nvcc: NVIDIA (R) Cuda compiler driver
@@ -179,10 +181,10 @@ Configuration finished
 ```
 
 ### Configuration options
-I didn't know what some of the configuration options where:
+Some helpful links to understand the configuration options:
 - [Intel Math Kernel Library (MKL)](https://en.wikipedia.org/wiki/Math_Kernel_Library). Enabled it even though I don't think it 'll contribute much because of the dedicated GPU.
 - [VERBS](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/verbs): This appears to be a [Remote direct memory access](https://en.wikipedia.org/wiki/Remote_direct_memory_access) feature. Since I only plan to use tf on my laptop this was disabled.
-- According to [wikipedia MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface) is used in parallel computing set ups and I don't think this has a use case for my laptop hence I didn't enable it.
+- According to [wikipedia, MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface) is used in parallel computing set ups and I don't think this has a use case for my laptop hence I didn't enable it.
 
 ### Build the pip package with GPU support:
 Moving forward we build tensorflow:
@@ -211,9 +213,9 @@ warning: no files found matching '*' under directory 'tensorflow/include/unsuppo
 ~/Repositories/tensorflow
 Fri 18 Aug 01:01:01 BST 2017 : === Output wheel file is in: /home/$USER/Repositories/tensorflow/
 ```
-- Comprehension Question: Why did we need to do it in two steps? What does the first step do if not create the binary of the compiled program? (And if so where are the output files placed?)
+- Comprehension Question: Why did we need to do it in two steps? <br> _What does the first step do if not create the binary of the compiled program? (And if so where are the output files placed?)_
 
-Finally let's install our new package!
+Finally let's install our new package! _(Installing it globally as root may not be the best option depending on your use case.)_
 ```{shell}
 $ sudo -H pip3 install tensorflow-1.3.0-cp35-cp35m-linux_x86_64.whl
 Processing ./tensorflow-1.3.0-cp35-cp35m-linux_x86_64.whl

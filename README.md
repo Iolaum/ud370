@@ -6,7 +6,7 @@ ___
 
 ## Udacity Deep Learning (ud370) course.
 
-- The assignments folder contains work done on the [Udacity Deep Learning course](https://classroom.udacity.com/courses/ud730). Original code on them also comes from the [Tensorflow repository](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/examples/udacity).
+- The assignments folder contains work done on the [Udacity Deep Learning course](https://classroom.udacity.com/courses/ud730). Some code on the assignments comes from the [Tensorflow repository](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/examples/udacity).
 
 
 ___

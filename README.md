@@ -8,12 +8,6 @@ ___
 
 - The assignments folder contains work done on the [Udacity Deep Learning course](https://classroom.udacity.com/courses/ud730). Original code on them also comes from the [Tensorflow repository](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/examples/udacity).
 
-## Additional Material
-
-The extras folder contains extra projects aimed at learning more about Deep Learning and TensorFlow.
-
-1. [Compiling TensorFlow from source.](extras/compileTF/compileTF.md)<br>
-Compiling Tensorflow from source in order to get optimum performance. The compilation instructions are geared towards local compilation and use in my laptop. Therefore they may need some adjusting depending on ones specific use case.
 
 ___
 

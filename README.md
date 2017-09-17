@@ -8,6 +8,12 @@ ___
 
 - The assignments folder contains work done on the [Udacity Deep Learning course](https://classroom.udacity.com/courses/ud730). Some code on the assignments comes from the [Tensorflow repository](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/examples/udacity).
 
+## Additional Material
+
+The extras folder contains small side projects aimed at learning more about Deep Learning and TensorFlow.
+
+1. [Resizing and viewing images.](extras/image-manipulation/image.ipynb)<br>
+Loading, viewing and resizing images with TensorFlow.
 
 ___
 
